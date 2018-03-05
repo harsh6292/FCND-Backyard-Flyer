@@ -74,7 +74,19 @@ class BackyardFlyer(Drone):
         3. Set the home location to current position
         4. Transition to the ARMING state
         """
-        print("arming transition")
+
+        if self.flight_state == States.MANUAL:
+            print("arming transition")
+
+            """ Take control of Drone """
+            self.take_control()
+
+            """ Arm the drone """
+            self.arm()
+
+            self.flight_state = States.ARMING
+        else:
+            print("Cannot arm the drone. Not in manual mode.")
 
     def takeoff_transition(self):
         """TODO: Fill out this method
@@ -83,7 +95,19 @@ class BackyardFlyer(Drone):
         2. Command a takeoff to 3.0m
         3. Transition to the TAKEOFF state
         """
-        print("takeoff transition")
+
+        if self.flight_state == States.ARMING:
+            print("takeoff transition")
+
+            """ Set the target altitude """
+            self.target_position[2] = 3.0
+
+            """ Takeoff to particular target position """
+            self.takeoff(self.target_position[2])
+
+            self.flight_state = States.TAKEOFF
+        else:
+        	print("Cannot takeoff. Drone is not armed.")
 
     def waypoint_transition(self):
         """TODO: Fill out this method
@@ -91,7 +115,17 @@ class BackyardFlyer(Drone):
         1. Command the next waypoint position
         2. Transition to WAYPOINT state
         """
-        print("waypoint transition")
+
+        if self.flight_state == States.TAKEOFF:
+            print("waypoint transition")
+
+            """ Move the drone to next waypoint """
+            self.cmd_position(north, east, altitude, heading)
+
+            self.flight_state = States.WAYPOINT
+        else:
+            print("Cannot transition to waypoint. Drone has not taken off.")
+
 
     def landing_transition(self):
         """TODO: Fill out this method
@@ -99,7 +133,16 @@ class BackyardFlyer(Drone):
         1. Command the drone to land
         2. Transition to the LANDING state
         """
-        print("landing transition")
+
+        if self.flight_state == States.TAKEOFF or self.flight_state == States.WAYPOINT:
+            print("landing transition")
+
+            """ Tell the drone to land at current position """
+            self.land()
+
+            self.flight_state = States.LANDING
+        else:
+            print("Cannot land the drone. Drone has not yet taken off.")
 
     def disarming_transition(self):
         """TODO: Fill out this method
@@ -107,7 +150,15 @@ class BackyardFlyer(Drone):
         1. Command the drone to disarm
         2. Transition to the DISARMING state
         """
-        print("disarm transition")
+        if self.flight_state == States.LANDING:
+            print("disarm transition")
+
+            """ Tell the drone to disarm itself """
+            self.disarm()
+
+            self.flight_state = States.DISARMING
+        else:
+            print("Cannot disarm the drone. Drone has not landed yet.")
 
     def manual_transition(self):
         """This method is provided
