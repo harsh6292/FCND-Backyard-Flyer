@@ -49,7 +49,11 @@ class BackyardFlyer(Drone):
 
         This triggers when `MsgID.LOCAL_VELOCITY` is received and self.local_velocity contains new data
         """
-        pass
+
+        if self.flight_state == States.LANDING:
+            if (((self.global_position[2] - self.global_home[2]) < 0.1) and abs(self.local_position[2]) < 0.01):
+                self.disarming_transition()
+                
 
     def state_callback(self):
         """
@@ -57,7 +61,17 @@ class BackyardFlyer(Drone):
 
         This triggers when `MsgID.STATE` is received and self.armed and self.guided contain new data
         """
-        pass
+
+        if not self.in_mission:
+            return
+
+        if self.flight_state == States.MANUAL:
+            self.arming_transition()
+        elif self.flight_state == States.ARMING:
+            self.takeoff_transition()
+        elif self.flight_state == States.DISARMING:
+            self.manual_transition()
+
 
     def calculate_box(self):
         """TODO: Fill out this method
@@ -84,6 +98,11 @@ class BackyardFlyer(Drone):
             """ Arm the drone """
             self.arm()
 
+            # set home position to current location
+            self.set_home_position(self.global_position[0],
+                                   self.global_position[1],
+                                   self.global_position[2])
+
             self.flight_state = States.ARMING
         else:
             print("Cannot arm the drone. Not in manual mode.")
@@ -99,11 +118,13 @@ class BackyardFlyer(Drone):
         if self.flight_state == States.ARMING:
             print("takeoff transition")
 
+            target_altitude = 3.0
+
             """ Set the target altitude """
-            self.target_position[2] = 3.0
+            self.target_position[2] = target_altitude
 
             """ Takeoff to particular target position """
-            self.takeoff(self.target_position[2])
+            self.takeoff(target_altitude)
 
             self.flight_state = States.TAKEOFF
         else:
