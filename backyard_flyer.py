@@ -41,7 +41,25 @@ class BackyardFlyer(Drone):
 
         This triggers when `MsgID.LOCAL_POSITION` is received and self.local_position contains new data
         """
-        pass
+        if self.flight_state == States.TAKEOFF:
+            if ((-1.0 * self.local_position[2]) > (0.95 * self.target_position[2])):
+                self.all_waypoints = self.calculate_box()
+                self.waypoint_transition()
+        elif self.flight_state == States.WAYPOINT:
+            if is_drone_at_target():
+                if len(all_waypoints) > 0:
+                    self.waypoint_transition()
+                else:
+                    if (self.local_velocity[0] < 0.1) and (self.local_velocity[1] < 0.1) and (self.local_velocity[2] < 0.1):
+                        self.landing_transition()
+                    
+    def is_drone_at_target(self):
+        if (abs(self.target_position[0]) - abs(self.local_position[0])) < 0.1 and
+            (abs(self.target_position[1]) - abs(self.local_position[1])) < 0.1 and
+            (abs(self.target_position[2]) - abs(self.local_position[2])) < 0.1:
+                return True
+
+        return False
 
     def velocity_callback(self):
         """
@@ -78,7 +96,9 @@ class BackyardFlyer(Drone):
         
         1. Return waypoints to fly a box
         """
-        pass
+        print("Setting square box..")
+        square_points = [[10.0, 0.0, 3.0], [10.0, 10.0, 3.0], [0.0, 10.0, 3.0], [0.0, 0.0, 3.0]]
+        return square_points
 
     def arming_transition(self):
         """TODO: Fill out this method
@@ -137,16 +157,15 @@ class BackyardFlyer(Drone):
         2. Transition to WAYPOINT state
         """
 
-        if self.flight_state == States.TAKEOFF:
-            print("waypoint transition")
+        print("waypoint transition")
 
-            """ Move the drone to next waypoint """
-            self.cmd_position(north, east, altitude, heading)
+        self.target_position = self.all_waypoints.pop(0)
 
-            self.flight_state = States.WAYPOINT
-        else:
-            print("Cannot transition to waypoint. Drone has not taken off.")
+        """ Move the drone to next waypoint """
+        self.cmd_position(self.target_position[0], self.target_position[1], self.target_position[2], 0.0)
 
+        self.flight_state = States.WAYPOINT
+        
 
     def landing_transition(self):
         """TODO: Fill out this method
