@@ -54,9 +54,9 @@ class BackyardFlyer(Drone):
                         self.landing_transition()
                     
     def is_drone_at_target(self):
-        if (((abs(self.target_position[0]) - abs(self.local_position[0])) < 0.1) and
-            ((abs(self.target_position[1]) - abs(self.local_position[1])) < 0.1) and
-            ((abs(self.target_position[2]) - abs(self.local_position[2])) < 0.1)):
+        if ( (abs(abs(self.target_position[0]) - abs(self.local_position[0])) < 0.1) and
+            (abs(abs(self.target_position[1]) - abs(self.local_position[1])) < 0.1) and
+            (abs(abs(self.target_position[2]) - abs(self.local_position[2])) < 0.1)):
                 return True
 
         return False
@@ -111,6 +111,10 @@ class BackyardFlyer(Drone):
 
         if self.flight_state == States.MANUAL:
             print("arming transition")
+
+            """Bug in simulator: Drone flies off way into east. To prevent it check if global pos is not 0"""
+            if self.global_position[0] == 0.0 and self.global_position[1] == 0.0:
+                return
 
             """ Take control of Drone """
             self.take_control()
