@@ -46,17 +46,17 @@ class BackyardFlyer(Drone):
                 self.all_waypoints = self.calculate_box()
                 self.waypoint_transition()
         elif self.flight_state == States.WAYPOINT:
-            if is_drone_at_target():
-                if len(all_waypoints) > 0:
+            if self.is_drone_at_target():
+                if len(self.all_waypoints) > 0:
                     self.waypoint_transition()
                 else:
                     if (self.local_velocity[0] < 0.1) and (self.local_velocity[1] < 0.1) and (self.local_velocity[2] < 0.1):
                         self.landing_transition()
                     
     def is_drone_at_target(self):
-        if (abs(self.target_position[0]) - abs(self.local_position[0])) < 0.1 and
-            (abs(self.target_position[1]) - abs(self.local_position[1])) < 0.1 and
-            (abs(self.target_position[2]) - abs(self.local_position[2])) < 0.1:
+        if (((abs(self.target_position[0]) - abs(self.local_position[0])) < 0.1) and
+            ((abs(self.target_position[1]) - abs(self.local_position[1])) < 0.1) and
+            ((abs(self.target_position[2]) - abs(self.local_position[2])) < 0.1)):
                 return True
 
         return False
